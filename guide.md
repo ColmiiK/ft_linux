@@ -121,10 +121,13 @@ $> chmod 755 $LFS
 And we're set to start installing packages.
 **Important**: if you restart your computer at any point throughout the LFS process,
 you will need to remount the LFS partition each time. To fix this, you can add the
-following line to the host's `/etc/fstab` file.
+following line to the host's `/etc/fstab` file. You can find your partitions UUID
+by running `blkid`.
 
 ```shell
-<root partition>  /mnt/lfs ext4   defaults      1     1
+UUID=<root partition uuid>  /mnt/lfs      ext4   defaults,nofail 0 0
+UUID=<boot partition uuid>  /mnt/lfs/boot ext4   defaults,nofail 0 0
+UUID=<swap partition uuid>  none          swap   sw,nofail       0 0
 ```
 
 ## Packages
