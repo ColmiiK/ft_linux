@@ -1804,3 +1804,204 @@ include /etc/ld.so.conf.d/*.conf
 EOF
 mkdir -pv /etc/ld.so.conf.d
 ```
+
+### Zlib
+
+- < 0.1 SBU
+- 6.4 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr
+```
+
+Compile, check the results and install.
+
+```shell
+make
+make check
+make install
+```
+
+Remove a useless static library.
+
+```shell
+rm -fv /usr/lib/libz.a
+```
+
+### Bzip
+
+- < 0.1 SBU
+- 7.2 MB
+
+Apply a patch for the docs.
+
+```shell
+patch -Np1 -i ../bzip2-1.0.8-install_docs-1.patch
+```
+
+Ensure symlinks are relative.
+
+```shell
+sed -i 's@\(ln -s -f \)$(PREFIX)/bin/@\1@' Makefile
+```
+
+Ensure the man pages are installed in the correct location.
+
+```shell
+sed -i "s@(PREFIX)/man@(PREFIX)/share/man@g" Makefile
+```
+
+Prepare for compilation.
+
+```shell
+make -f Makefile-libbz2_so
+make clean
+```
+
+Compile and install.
+
+```shell
+make
+make PREFIX=/usr install
+```
+
+Install the shared library.
+
+```shell
+cp -av libbz2.so.* /usr/lib
+ln -sv libbz2.so.1.0.8 /usr/lib/libbz2.so
+```
+
+Install the shared `bzip2` library into the `/usr/bin` directory.
+Replace two copies of `bzip2` with symlinks.
+
+```shell
+cp -v bzip2-shared /usr/bin/bzip2
+for i in /usr/bin/{bzcat,bunzip2}; do
+  ln -sfv bzip2 $i
+done
+```
+
+Remove a useless static library.
+
+```shell
+rm -fv /usr/lib/libbz2.a
+```
+
+### Xz
+
+- 0.1 SBU
+- 21 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr    \
+            --disable-static \
+            --docdir=/usr/share/doc/xz-5.6.4
+```
+
+Compile, check the results and install.
+
+```shell
+make
+make check
+make install
+```
+
+### Lz4
+
+- 0.1 SBU
+- 4.2 MB
+
+Compile, check and install.
+
+```shell
+make BUILD_STATIC=no PREFIX=/usr
+make -j1 check
+make BUILD_STATIC=no PREFIX=/usr install
+```
+
+### Zstd
+
+- 0.4 SBU
+- 85 MB
+
+Compile, check and install.
+
+```shell
+make prefix=/usr
+make check
+make prefix=/usr install
+```
+
+Remove the static library.
+
+```shell
+rm -v /usr/lib/libzstd.a
+```
+
+### File
+
+- < 0.1 SBU
+- 19 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr
+```
+
+Compile, check and install.
+
+```shell
+make
+make check
+make  install
+```
+
+### Readline
+
+- < 0.1 SBU
+- 16 MB
+
+Fix some renaming issues when installing Readline preventively.
+
+```shell
+sed -i '/MV.*old/d' Makefile.in
+sed -i '/{OLDSUFF}/c:' support/shlib-install
+```
+
+Prevent hard coding library search paths in shared libraries.
+
+```shell
+sed -i 's/-Wl,-rpath,[^ ]*//' support/shobj-conf
+```
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr    \
+            --disable-static \
+            --with-curses    \
+            --docdir=/usr/share/doc/readline-8.2.13
+```
+
+I had an issue where this config command failed.
+The root cause was that `/dev` was not mounted correctly, so Zstd installed incorrectly.
+Extining chroot, mounting `/dev` and then trying again from Zstd fixed it.
+
+Compile and install.
+
+```shell
+make SHLIB_LIBS="-lncursesw"
+make install
+```
+
+If you want, install the docs.
+
+```shell
+install -v -m644 doc/*.{ps,pdf,html,dvi} /usr/share/doc/readline-8.2.13
+```
