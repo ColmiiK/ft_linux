@@ -2005,3 +2005,780 @@ If you want, install the docs.
 ```shell
 install -v -m644 doc/*.{ps,pdf,html,dvi} /usr/share/doc/readline-8.2.13
 ```
+
+### M4
+
+- 0.3 SBU
+- 49 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr
+```
+
+Compile, check and install.
+
+```shell
+make
+make check
+make install
+```
+
+### Bc
+
+- < 0.1 SBU
+- 7.8 MB
+
+Prepare for compilation.
+
+```shell
+CC=gcc ./configure --prefix=/usr -G -O3 -r
+```
+
+Compile, check and install.
+
+```shell
+make
+make test
+make install
+```
+
+### Flex
+
+- 0.1 SBU
+- 33 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr \
+            --docdir=/usr/share/doc/flex-2.6.4 \
+            --disable-static
+```
+
+Compile, check and install.
+
+```shell
+make
+make check
+make install
+```
+
+Some programs don't know about `flex` just yet, so they will try to use its predecessor `lex`.
+To fix this, create a symlink that will run `flex` in `lex` emulation mode.
+Also, fix the man page.
+
+```shell
+ln -sv flex   /usr/bin/lex
+ln -sv flex.1 /usr/share/man/man1/lex.1
+```
+
+### Tcl
+
+- 3.1 SBU
+- 91 MB
+
+Tcl, Expect, and DejaGNU (this one and the next 2 packages) are installed for testing purposes.
+It might seem excessive, but it's reassuring, since Binutils, GCC and some other packages are
+of vital importance to the system.
+
+Prepare for compilation.
+
+```shell
+SRCDIR=$(pwd)
+cd unix
+./configure --prefix=/usr           \
+            --mandir=/usr/share/man \
+            --disable-rpath
+```
+
+Build the package.
+
+```shell
+make
+
+sed -e "s|$SRCDIR/unix|/usr/lib|" \
+    -e "s|$SRCDIR|/usr/include|"  \
+    -i tclConfig.sh
+
+sed -e "s|$SRCDIR/unix/pkgs/tdbc1.1.10|/usr/lib/tdbc1.1.10|" \
+    -e "s|$SRCDIR/pkgs/tdbc1.1.10/generic|/usr/include|"    \
+    -e "s|$SRCDIR/pkgs/tdbc1.1.10/library|/usr/lib/tcl8.6|" \
+    -e "s|$SRCDIR/pkgs/tdbc1.1.10|/usr/include|"            \
+    -i pkgs/tdbc1.1.10/tdbcConfig.sh
+
+sed -e "s|$SRCDIR/unix/pkgs/itcl4.3.2|/usr/lib/itcl4.3.2|" \
+    -e "s|$SRCDIR/pkgs/itcl4.3.2/generic|/usr/include|"    \
+    -e "s|$SRCDIR/pkgs/itcl4.3.2|/usr/include|"            \
+    -i pkgs/itcl4.3.2/itclConfig.sh
+
+unset SRCDIR
+```
+
+Test and install.
+
+```shell
+make test
+make install
+```
+
+Make the installed library writable so we can remove debugging symbols later.
+
+```shell
+chmod -v u+w /usr/lib/libtcl8.6.so
+```
+
+Install Tcl's headers since Expect requires them.
+
+```shell
+make install-private-headers
+```
+
+Create the necessary symlink.
+
+```shell
+ln -sfv tclsh8.6 /usr/bin/tclsh
+```
+
+Rename a man page that conflicts with a Perl man page.
+
+```shell
+mv /usr/share/man/man3/{Thread,Tcl_Thread}.3
+```
+
+Optionally install the docs.
+
+```shell
+cd ..
+tar -xf ../tcl8.6.16-html.tar.gz --strip-components=1
+mkdir -v -p /usr/share/doc/tcl-8.6.16
+cp -v -r  ./html/* /usr/share/doc/tcl-8.6.16
+```
+
+### Expect
+
+- 0.2 SBU
+- 3.9 MB
+
+Expect needs PTYs to work, verify it.
+
+```shell
+python3 -c 'from pty import spawn; spawn(["echo", "ok"])'
+```
+
+This should output "ok". If it doesn't, go back to "Preparing virtual kernel file systems"
+and ensure that all virtual kernel file system are mounted correctly.
+
+Apply a patch.
+
+```shell
+patch -Np1 -i ../expect-5.45.4-gcc14-1.patch
+```
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr           \
+            --with-tcl=/usr/lib     \
+            --enable-shared         \
+            --disable-rpath         \
+            --mandir=/usr/share/man \
+            --with-tclinclude=/usr/include
+```
+
+Compile, check and install.
+
+```shell
+make
+make test
+make install
+ln -svf expect5.45.4/libexpect5.45.4.so /usr/lib
+```
+
+### DejaGNU
+
+- < 0.1 SBU
+- 6.9 MB
+
+The upstream recommends building DejaGNU on a build directory.
+
+```shell
+mkdir -v build
+cd       build
+```
+
+Prepare for compilation.
+
+```shell
+../configure --prefix=/usr
+makeinfo --html --no-split -o doc/dejagnu.html ../doc/dejagnu.texi
+makeinfo --plaintext       -o doc/dejagnu.txt  ../doc/dejagnu.texi
+```
+
+Test the results and install.
+
+```shell
+make check
+make install
+install -v -dm755  /usr/share/doc/dejagnu-1.6.3
+install -v -m644   doc/dejagnu.{html,txt} /usr/share/doc/dejagnu-1.6.3
+```
+
+### Pkgconf
+
+- < 0.1 SBU
+- 4.7 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr              \
+            --disable-static           \
+            --docdir=/usr/share/doc/pkgconf-2.3.0
+```
+
+Compile and install.
+
+```shell
+make
+make install
+```
+
+To maintain compatibility with the original Pkg-config, create two symlinks.
+
+```shell
+ln -sv pkgconf   /usr/bin/pkg-config
+ln -sv pkgconf.1 /usr/share/man/man1/pkg-config.1
+```
+
+### Binutils
+
+- 1.6 SBU
+- 819 MB
+
+The Binutils docs recommend creating a build directory.
+
+```shell
+mkdir -v build
+cd       build
+```
+
+Prepare for compilation.
+
+```shell
+../configure --prefix=/usr       \
+             --sysconfdir=/etc   \
+             --enable-ld=default \
+             --enable-plugins    \
+             --enable-shared     \
+             --disable-werror    \
+             --enable-64-bit-bfd \
+             --enable-new-dtags  \
+             --with-system-zlib  \
+             --enable-default-hash-style=gnu
+```
+
+Compile and test.
+
+```shell
+make tooldir=/usr
+make -k check
+```
+
+For a list of failed tests, run this command.
+
+```shell
+grep '^FAIL:' $(find -name '*.log')
+```
+
+Install the package.
+
+```shell
+make tooldir=/usr install
+```
+
+Remove static libraries and other files.
+
+```shell
+rm -rfv /usr/lib/lib{bfd,ctf,ctf-nobfd,gprofng,opcodes,sframe}.a \
+        /usr/share/doc/gprofng/
+```
+
+### GMP
+
+- 0.3 SBU
+- 54 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr    \
+            --enable-cxx     \
+            --disable-static \
+            --docdir=/usr/share/doc/gmp-6.3.0
+```
+
+Compile and generate the HTML docs.
+
+```shell
+make
+make html
+```
+
+Test the results.
+
+```shell
+make check 2>&1 | tee gmp-check-log
+```
+
+Ensure that at least 199 tests passed.
+
+```shell
+awk '/# PASS:/{total+=$3} ; END{print total}' gmp-check-log
+```
+
+Install the package and the docs.
+
+```shell
+make install
+make install-html
+```
+
+### MPFR
+
+- 0.2 SBU
+- 43 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr        \
+            --disable-static     \
+            --enable-thread-safe \
+            --docdir=/usr/share/doc/mpfr-4.2.1
+```
+
+Compile and generate the HTML docs.
+
+```shell
+make
+make html
+```
+
+Test the results.
+Ensure that all 198 tests passed.
+
+```shell
+make check
+```
+
+Install the package and the docs.
+
+```shell
+make install
+make install-html
+```
+
+### MPC
+
+- 0.1 SBU
+- 22 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr    \
+            --disable-static \
+            --docdir=/usr/share/doc/mpc-1.3.1
+```
+
+Compile and generate the HTML docs.
+
+```shell
+make
+make html
+```
+
+Test the results.
+
+```shell
+make check
+```
+
+Install the package and the docs.
+
+```shell
+make install
+make install-html
+```
+
+### Attr
+
+- < 0.1 SBU
+- 4.1 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr     \
+            --disable-static  \
+            --sysconfdir=/etc \
+            --docdir=/usr/share/doc/attr-2.5.2
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+### Acl
+
+- < 0.1 SBU
+- 6.5 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr         \
+            --disable-static      \
+            --docdir=/usr/share/doc/acl-2.3.2
+```
+
+Compile, test and install.
+A test name `test/cp.test` is known to fail because Coreutils is not build with Acl support yet.
+
+```shell
+make
+make check
+make install
+```
+
+### Libcap
+
+- < 0.1 SBU
+- 3.0 MB
+
+Prevent static libraries from being installed.
+
+```shell
+sed -i '/install -m.*STA/d' libcap/Makefile
+```
+
+Compile the package.
+
+```shell
+make prefix=/usr lib=lib
+```
+
+Test and install.
+
+```shell
+make test
+make prefix=/usr lib=lib install
+```
+
+### Libxcrypt
+
+- 0.1 SBU
+- 12 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr                \
+            --enable-hashes=strong,glibc \
+            --enable-obsolete-api=no     \
+            --disable-static             \
+            --disable-failure-tokens
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+### Shadow
+
+- 0.1 SBU
+- 114 MB
+
+Disable installation of `groups` as Coreutils provides a better alternative.
+
+```shell
+sed -i 's/groups$(EXEEXT) //' src/Makefile.in
+find man -name Makefile.in -exec sed -i 's/groups\.1 / /'   {} \;
+find man -name Makefile.in -exec sed -i 's/getspnam\.3 / /' {} \;
+find man -name Makefile.in -exec sed -i 's/passwd\.5 / /'   {} \;
+```
+
+Use Yescrypt instead of the default crypt method since it's more secure.
+Also, remove obsolete links.
+
+```shell
+sed -e 's:#ENCRYPT_METHOD DES:ENCRYPT_METHOD YESCRYPT:' \
+    -e 's:/var/spool/mail:/var/mail:'                   \
+    -e '/PATH=/{s@/sbin:@@;s@/bin:@@}'                  \
+    -i etc/login.defs
+```
+
+Prepare for compilation.
+
+```shell
+touch /usr/bin/passwd
+./configure --sysconfdir=/etc   \
+            --disable-static    \
+            --with-{b,yes}crypt \
+            --without-libbsd    \
+            --with-group-name-max-length=32
+```
+
+Compile and install.
+
+```shell
+make
+make exec_prefix=/usr install
+make -C man install-man
+```
+
+Let's configure password shadowing.
+First, enable it
+
+```shell
+pwconv
+grpconv
+```
+
+The default configuration for useradd needs adjusting.
+
+```shell
+mkdir -p /etc/default
+useradd -D --gid 999
+```
+
+Set the password for root.
+
+```shell
+passwd root
+```
+
+### GCC
+
+- 46 SBU (with tests)
+- 6.3 GB
+
+If building on x86_64, change the directory name of 64-bit libraries to lib.
+
+```shell
+case $(uname -m) in
+  x86_64)
+    sed -e '/m64=/s/lib64/lib/' \
+        -i.orig gcc/config/i386/t-linux64
+  ;;
+esac
+```
+
+The GCC docs recommend creating a build directory.
+
+```shell
+mkdir -v build
+cd       build
+```
+
+Prepare for compilation.
+
+```shell
+../configure --prefix=/usr            \
+             LD=ld                    \
+             --enable-languages=c,c++ \
+             --enable-default-pie     \
+             --enable-default-ssp     \
+             --enable-host-pie        \
+             --disable-multilib       \
+             --disable-bootstrap      \
+             --disable-fixincludes    \
+             --with-system-zlib
+```
+
+Compile.
+
+```shell
+make
+```
+
+These test are important, but they take an ungodly amount of time.
+First-time builders (us) are encouraged to run the test suite.
+You can speed up the tests by adding -jX to the make check command,
+where X is the number of CPU cores on your system.
+
+Expand the stack size, just in case.
+
+```shell
+ulimit -s -H unlimited
+```
+
+Remove known test failures.
+
+```shell
+sed -e '/cpython/d'               -i ../gcc/testsuite/gcc.dg/plugin/plugin.exp
+sed -e 's/no-pic /&-no-pie /'     -i ../gcc/testsuite/gcc.target/i386/pr113689-1.c
+sed -e 's/300000/(1|300000)/'     -i ../libgomp/testsuite/libgomp.c-c++-common/pr109062.c
+sed -e 's/{ target nonpic } //' \
+    -e '/GOTPCREL/d'              -i ../gcc/testsuite/gcc.target/i386/fentryname3.c
+```
+
+Test the results as a non-privileged user, without stopping at errors.
+
+```shell
+chown -R tester .
+su tester -c "PATH=$PATH make -k check"
+```
+
+Extract a summary of the results.
+
+```shell
+../contrib/test_summary
+```
+
+Filter them out by piping through `grep -A7 Summ`.
+Check your results against these ones.
+
+- [Build logs](https://www.linuxfromscratch.org/lfs/build-logs/12.3/)
+- [Test results](https://gcc.gnu.org/ml/gcc-testresults/)
+
+The tsan tests are known to fail. Some unexpected failures cannot always be avoided.
+Unless the tests results are vastly different, it is safe to continue.
+
+Install the package.
+
+```shell
+make install
+```
+
+The GCC build directory is now owned by tester, change it's ownership to root.
+
+```shell
+chown -v -R root:root \
+    /usr/lib/gcc/$(gcc -dumpmachine)/14.2.0/include{,-fixed}
+```
+
+Create a symlink required by the FHS.
+
+```shell
+ln -svr /usr/bin/cpp /usr/lib
+```
+
+Many packages use cc to call the C compiler. We already have a symlink,
+create a symlink for the man page as well.
+
+```shell
+ln -sv gcc.1 /usr/share/man/man1/cc.1
+```
+
+Add a compatibility symlink to build programs with Link Time Optimization.
+
+```shell
+ln -sfv ../../libexec/gcc/$(gcc -dumpmachine)/14.2.0/liblto_plugin.so \
+        /usr/lib/bfd-plugins/
+```
+
+Our final toolchain is in place. Perform some sanity checks, just in case.
+
+```shell
+echo 'int main(){}' > dummy.c
+cc dummy.c -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /lib'
+```
+
+There should be no errors and the output should be similar to this.
+
+```shell
+[Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+```
+
+Make sure we're set up to use the correct start files.
+
+```shell
+grep -E -o '/usr/lib.*/S?crt[1in].*succeeded' dummy.log
+```
+
+The output should be something like this.
+
+```shell
+/usr/lib/gcc/x86_64-pc-linux-gnu/14.2.0/../../../../lib/Scrt1.o succeeded
+/usr/lib/gcc/x86_64-pc-linux-gnu/14.2.0/../../../../lib/crti.o succeeded
+/usr/lib/gcc/x86_64-pc-linux-gnu/14.2.0/../../../../lib/crtn.o succeeded
+```
+
+Verify that the compiler is searching for the correct header files.
+
+```shell
+grep -B4 '^ /usr/include' dummy.log
+```
+
+Again, the output should be something like this.
+
+```shell
+#include <...> search starts here:
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14.2.0/include
+ /usr/local/include
+ /usr/lib/gcc/x86_64-pc-linux-gnu/14.2.0/include-fixed
+ /usr/include
+```
+
+Verify that the linker is being used with the correct search paths.
+
+```shell
+grep 'SEARCH.*/usr/lib' dummy.log |sed 's|; |\n|g'
+```
+
+It should output something like this.
+
+```shell
+SEARCH_DIR("/usr/x86_64-pc-linux-gnu/lib64")
+SEARCH_DIR("/usr/local/lib64")
+SEARCH_DIR("/lib64")
+SEARCH_DIR("/usr/lib64")
+SEARCH_DIR("/usr/x86_64-pc-linux-gnu/lib")
+SEARCH_DIR("/usr/local/lib")
+SEARCH_DIR("/lib")
+SEARCH_DIR("/usr/lib");
+```
+
+Make sure we're using the correct libc.
+
+```shell
+grep "/lib.*/libc.so.6 " dummy.log
+```
+
+Output should be similar to this one.
+
+```shell
+attempt to open /usr/lib/libc.so.6 succeeded
+```
+
+Make sure GCC is using the correct dynamic linker.
+
+```shell
+grep found dummy.log
+```
+
+The output should be similar to this one.
+
+```shell
+found ld-linux-x86-64.so.2 at /usr/lib/ld-linux-x86-64.so.2
+```
+
+If everything is alright, clean up the tests and remove a misplaced file.
+
+```shell
+rm -v dummy.c a.out dummy.log
+mkdir -pv /usr/share/gdb/auto-load/usr/lib
+mv -v /usr/lib/*gdb.py /usr/share/gdb/auto-load/usr/lib
+```
