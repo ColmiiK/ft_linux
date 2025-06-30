@@ -1103,6 +1103,8 @@ Check your results against these ones.
 The tsan tests are known to fail. Some unexpected failures cannot always be avoided.
 Unless the tests results are vastly different, it is safe to continue.
 
+In my case, I had 6 unexpected failures.
+
 Install the package.
 
 ```shell
@@ -1230,3 +1232,1302 @@ rm -v dummy.c a.out dummy.log
 mkdir -pv /usr/share/gdb/auto-load/usr/lib
 mv -v /usr/lib/*gdb.py /usr/share/gdb/auto-load/usr/lib
 ```
+
+## Ncurses
+
+- 0.2 SBU
+- 46 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr           \
+            --mandir=/usr/share/man \
+            --with-shared           \
+            --without-debug         \
+            --without-normal        \
+            --with-cxx-shared       \
+            --enable-pc-files       \
+            --with-pkg-config-libdir=/usr/lib/pkgconfig
+```
+
+Compile.
+
+```shell
+make
+```
+
+Ncurses has a test suite, but can only be run after installation.
+
+The installation of Ncruses will overwrite `libncursesw.so.6.5`, which may crash the shell process.
+Install the package with `DESTDIR`, replacing the library file using `install`.
+
+```shell
+make DESTDIR=$PWD/dest install
+install -vm755 dest/usr/lib/libncursesw.so.6.5 /usr/lib
+rm -v  dest/usr/lib/libncursesw.so.6.5
+sed -e 's/^#if.*XOPEN.*$/#if 1/' \
+    -i dest/usr/include/curses.h
+cp -av dest/* /
+```
+
+Many applications expect the linker to be able to find non-wide-character Ncurses libraries.
+Trick them with symlinks.
+
+```shell
+for lib in ncurses form panel menu ; do
+    ln -sfv lib${lib}w.so /usr/lib/lib${lib}.so
+    ln -sfv ${lib}w.pc    /usr/lib/pkgconfig/${lib}.pc
+done
+```
+
+Make sure that old applications that look for `-lcurses` are still buildable.
+
+```shell
+ln -sfv libncursesw.so /usr/lib/libcurses.so
+```
+
+If desired, install the Ncurses docs.
+
+```shell
+cp -v -R doc -T /usr/share/doc/ncurses-6.5
+```
+
+## Sed
+
+- 0.3 SBU
+- 30 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr
+```
+
+Compile the package and generate the HTML docs.
+
+```shell
+make
+make html
+```
+
+Test the results.
+
+```shell
+chown -R tester .
+su tester -c "PATH=$PATH make check"
+```
+
+Install the package and the docs.
+
+```shell
+make install
+install -d -m755           /usr/share/doc/sed-4.9
+install -m644 doc/sed.html /usr/share/doc/sed-4.9
+```
+
+## Psmisc
+
+- < 0.1 SBU
+- 6.7 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+## Gettext
+
+- 1.7 SBU
+- 290 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr    \
+            --disable-static \
+            --docdir=/usr/share/doc/gettext-0.24
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+chmod -v 0755 /usr/lib/preloadable_libintl.so
+```
+
+## Bison
+
+- 2.1 SBU
+- 62 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr --docdir=/usr/share/doc/bison-3.8.2
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+## Grep
+
+- 0.4 SBU
+- 39 MB
+
+Remove a warning about egrep and fgrep.
+
+```shell
+sed -i "s/echo/#echo/" src/egrep.sh
+```
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+## Bash
+
+- 1.4 SBU
+- 53 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr             \
+            --without-bash-malloc     \
+            --with-installed-readline \
+            --docdir=/usr/share/doc/bash-5.2.37
+```
+
+Compile.
+
+```shell
+make
+```
+
+Optionally, run the tests.
+
+```shell
+chown -R tester .
+su -s /usr/bin/expect tester << "EOF"
+set timeout -1
+spawn make tests
+expect eof
+lassign [wait] _ _ _ value
+exit $value
+EOF
+```
+
+Install the package.
+
+```shell
+make install
+```
+
+Run the newly compiled `bash`, replacing the current one.
+
+```shell
+exec /usr/bin/bash --login
+```
+
+## Libtool
+
+- 0.6 SBU
+- 44 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+Remove useless a static library.
+
+```shell
+rm -fv /usr/lib/libltdl.a
+```
+
+## GDBM
+
+- < 0.1 SBU
+- 13 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr    \
+            --disable-static \
+            --enable-libgdbm-compat
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+## Gperf
+
+- < 0.1 SBU
+- 6.1 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr --docdir=/usr/share/doc/gperf-3.1
+```
+
+Compile, test and install.
+
+```shell
+make
+make -j1 check
+make install
+```
+
+We run the tests with only one core as they are known to fail with more.
+
+## Expat
+
+- < 0.1 SBU
+- 14 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr    \
+            --disable-static \
+            --docdir=/usr/share/doc/expat-2.6.4
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+If desired, install the docs.
+
+```shell
+install -v -m644 doc/*.{html,css} /usr/share/doc/expat-2.6.4
+```
+
+## Inetutils
+
+- 0.2 SBU
+- 32 MB
+
+Make the package build with GCC-14.1 or later.
+
+```shell
+sed -i 's/def HAVE_TERMCAP_TGETENT/ 1/' telnet/telnet.c
+```
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr        \
+            --bindir=/usr/bin    \
+            --localstatedir=/var \
+            --disable-logger     \
+            --disable-whois      \
+            --disable-rcp        \
+            --disable-rexec      \
+            --disable-rlogin     \
+            --disable-rsh        \
+            --disable-servers
+
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+Move the program to the proper location.
+
+```shell
+mv -v /usr/{,s}bin/ifconfig
+```
+
+## Less
+
+- < 0.1 SBU
+- 14 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr --sysconfdir=/etc
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+## Perl
+
+- 1.3 SBU
+- 245 MB
+
+To make sure that Perl uses the libraries already installed in the system instead of building them,
+run this pair of commands.
+
+```shell
+export BUILD_ZLIB=False
+export BUILD_BZIP2=0
+```
+
+Prepare for compilation.
+
+```shell
+sh Configure -des                                          \
+             -D prefix=/usr                                \
+             -D vendorprefix=/usr                          \
+             -D privlib=/usr/lib/perl5/5.40/core_perl      \
+             -D archlib=/usr/lib/perl5/5.40/core_perl      \
+             -D sitelib=/usr/lib/perl5/5.40/site_perl      \
+             -D sitearch=/usr/lib/perl5/5.40/site_perl     \
+             -D vendorlib=/usr/lib/perl5/5.40/vendor_perl  \
+             -D vendorarch=/usr/lib/perl5/5.40/vendor_perl \
+             -D man1dir=/usr/share/man/man1                \
+             -D man3dir=/usr/share/man/man3                \
+             -D pager="/usr/bin/less -isR"                 \
+             -D useshrplib                                 \
+             -D usethreads
+```
+
+Compile, test and install.
+
+```shell
+make
+TEST_JOBS=$(nproc) make test_harness
+make install
+unset BUILD_ZLIB BUILD_BZIP2
+```
+
+## XML::Parser
+
+- < 0.1 SBU
+- 2.4 MB
+
+Prepare for compilation.
+
+```shell
+perl Makefile.PL
+```
+
+Compile, test and install.
+
+```shell
+make
+make test
+make install
+```
+
+## Intltool
+
+- < 0.1 SBU
+- 1.5 MB
+
+Fix a warning caused by perl-5.22 and later.
+
+```shell
+sed -i 's:\\\${:\\\$\\{:' intltool-update.in
+```
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+install -v -Dm644 doc/I18N-HOWTO /usr/share/doc/intltool-0.51.0/I18N-HOWTO
+```
+
+## Autoconf
+
+- 0.4 SBU (with tests)
+- 25 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+## Automake
+
+- 1.1 SBU (with tests)
+- 121 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr --docdir=/usr/share/doc/automake-1.17
+```
+
+Compile, test and install.
+We run the tests with at least 4 logical cores, even on systems with less.
+This will speed them up due to internal delays.
+
+```shell
+make
+make -j$(($(nproc)>4?$(nproc):4)) check
+make install
+```
+
+## OpenSSL
+
+- 1.8 SBU
+- 920 MB
+
+Prepare for compilation.
+
+```shell
+./config --prefix=/usr         \
+         --openssldir=/etc/ssl \
+         --libdir=lib          \
+         shared                \
+         zlib-dynamic
+```
+
+Compile and test.
+One test, `30-test_afalg.t` might fail.
+
+```shell
+make
+HARNESS_JOBS=$(nproc) make test
+```
+
+Install the package.
+
+```shell
+sed -i '/INSTALL_LIBS/s/libcrypto.a libssl.a//' Makefile
+make MANSUFFIX=ssl install
+```
+
+Add the version to the docs for consistency.
+
+```shell
+mv -v /usr/share/doc/openssl /usr/share/doc/openssl-3.4.1
+```
+
+Optionally, install additional docs.
+
+```shell
+cp -vfr doc/* /usr/share/doc/openssl-3.4.1
+```
+
+## Libelf from Elfutils
+
+- 0.3 SBU
+- 135 MB
+
+Libelf is part of the elfutils-0.192 package.
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr                \
+            --disable-debuginfod         \
+            --enable-libdebuginfod=dummy
+```
+
+Compile and test.
+
+```shell
+make
+make check
+```
+
+Install only Libelf.
+
+```shell
+make -C libelf install
+install -vm644 config/libelf.pc /usr/lib/pkgconfig
+rm /usr/lib/libelf.a
+```
+
+## Libffi
+
+- 1.7 SBU
+- 11 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr          \
+            --disable-static       \
+            --with-gcc-arch=native
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+## Python
+
+- 2.1 SBU
+- 501 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr        \
+            --enable-shared      \
+            --with-system-expat  \
+            --enable-optimizations
+```
+
+Compile, test and install.
+For slow systems, adding a timeout of 1 SBU is recommended,
+since some tests can hang.
+
+```shell
+make
+make test TESTOPTS="--timeout 120"
+make install
+```
+
+We will be running `pip3` to install Python3 programs in several places in the guide.
+This goes against the recommendations of the developers, but since we don't have a
+system wide package manager, the recommendations don't really apply.
+So, when we run `pip3`, multiple warnings will appear, that is fine.
+
+You can suppress these warnings with a configuration file.
+
+```shell
+cat > /etc/pip.conf << EOF
+[global]
+root-user-action = ignore
+disable-pip-version-check = true
+EOF
+```
+
+If desired, install the docs.
+
+```shell
+install -v -dm755 /usr/share/doc/python-3.13.2/html
+
+tar --strip-components=1  \
+    --no-same-owner       \
+    --no-same-permissions \
+    -C /usr/share/doc/python-3.13.2/html \
+    -xvf ../python-3.13.2-docs-html.tar.bz2
+```
+
+## Flit-core
+
+- < 0.1 SBU
+- 1.0 MB
+
+Build and install the package.
+
+```shell
+pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
+pip3 install --no-index --find-links dist flit_core
+```
+
+## Wheel
+
+- < 0.1 SBU
+- 1.6 MB
+
+Build and install the package.
+
+```shell
+pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
+pip3 install --no-index --find-links dist wheel
+```
+
+## Setuptools
+
+- < 0.1 SBU
+- 26 MB
+
+Build and install the package.
+
+```shell
+pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
+pip3 install --no-index --find-links dist setuptools
+```
+
+## Ninja
+
+- 0.2 SBU
+- 37 MB
+
+Ninja will always utilize the greatest possible number of processes in parallel.
+This can overheat the CPU or make the system run out of memory.
+We can limit this, optionally.
+
+```shell
+export NINJAJOBS=4
+```
+
+And then, make Ninja recognize the environment variable.
+
+```shell
+sed -i '/int Guess/a \
+  int   j = 0;\
+  char* jobs = getenv( "NINJAJOBS" );\
+  if ( jobs != NULL ) j = atoi( jobs );\
+  if ( j > 0 ) return j;\
+' src/ninja.cc
+```
+
+Build and install the package.
+
+```shell
+python3 configure.py --bootstrap --verbose
+install -vm755 ninja /usr/bin/
+install -vDm644 misc/bash-completion /usr/share/bash-completion/completions/ninja
+install -vDm644 misc/zsh-completion  /usr/share/zsh/site-functions/_ninja
+```
+
+## Meson
+
+- < 0.1 SBU
+- 44 MB
+
+Compile the package.
+
+```shell
+pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
+```
+
+Build and install the package.
+
+```shell
+pip3 install --no-index --find-links dist meson
+install -vDm644 data/shell-completions/bash/meson /usr/share/bash-completion/completions/meson
+install -vDm644 data/shell-completions/zsh/_meson /usr/share/zsh/site-functions/_meson
+```
+
+## Kmod
+
+- < 0.1 SBU
+- 11 MB
+
+Prepare for compilation.
+
+```shell
+mkdir -p build
+cd       build
+
+meson setup --prefix=/usr ..    \
+            --sbindir=/usr/sbin \
+            --buildtype=release \
+            -D manpages=false
+```
+
+Compile and install the package.
+
+```shell
+ninja
+ninja install
+```
+
+## Coreutils
+
+- 1.2 SBU
+- 182 MB
+
+Patch it.
+
+```shell
+patch -Np1 -i ../coreutils-9.6-i18n-1.patch
+```
+
+Prepare for compilation.
+
+```shell
+autoreconf -fv
+automake -af
+FORCE_UNSAFE_CONFIGURE=1 ./configure \
+            --prefix=/usr            \
+            --enable-no-install-program=kill,uptime
+```
+
+Compile.
+
+```shell
+make
+```
+
+Optionally, run the tests. First, as root.
+
+```shell
+make NON_ROOT_USERNAME=tester check-root
+```
+
+Then, as tester.
+
+```shell
+groupadd -g 102 dummy -U tester
+chown -R tester .
+su tester -c "PATH=$PATH make -k RUN_EXPENSIVE_TESTS=yes check" \
+   < /dev/null
+groupdel dummy
+```
+
+Install and move the programs to their specified locations.
+
+```shell
+make install
+mv -v /usr/bin/chroot /usr/sbin
+mv -v /usr/share/man/man1/chroot.1 /usr/share/man/man8/chroot.8
+sed -i 's/"1"/"8"/' /usr/share/man/man8/chroot.8
+```
+
+## Check
+
+- 2.1 SBU (with tests)
+- 11 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr --disable-static
+```
+
+Build, test and install.
+
+```shell
+make
+make check
+make docdir=/usr/share/doc/check-0.15.2 install
+```
+
+## Diffutils
+
+- 0.4 SBU
+- 50 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr
+```
+
+Build, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+## Gawk
+
+- 0.2 SBU
+- 43 MB
+
+Ensure no unneeded files are installed.
+
+```shell
+sed -i 's/extras//' Makefile.in
+```
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr
+```
+
+Compile.
+
+```shell
+make
+```
+
+Test the results.
+
+```shell
+chown -R tester .
+su tester -c "PATH=$PATH make check"
+```
+
+Install the package.
+
+```shell
+rm -f /usr/bin/gawk-5.3.1
+make install
+```
+
+Create a symlink for the man page.
+
+```shell
+ln -sv gawk.1 /usr/share/man/man1/awk.1
+```
+
+If desired, install the docs.
+
+```shell
+install -vDm644 doc/{awkforai.txt,*.{eps,pdf,jpg}} -t /usr/share/doc/gawk-5.3.1
+```
+
+## Findutils
+
+- 0.7 SBU
+- 63 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr --localstatedir=/var/lib/locate
+```
+
+Compile.
+
+```shell
+make
+```
+
+Test the results.
+
+```shell
+chown -R tester .
+su tester -c "PATH=$PATH make check"
+```
+
+Install the package.
+
+```shell
+make install
+```
+
+## Groff
+
+- 0.2 SBU
+- 108 MB
+
+Prepare for compilation.
+`<paper_size>` should be "A4", "letter" or something similar, depending where you live.
+
+```shell
+PAGE=<paper_size> ./configure --prefix=/usr
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+## GRUB
+
+- 0.3 SBU
+- 166 MB
+
+Unset any potentially harmful variables.
+
+```shell
+unset {C,CPP,CXX,LD}FLAGS
+```
+
+Add a missing file from the release tarball.
+
+```shell
+echo depends bli part_gpt > grub-core/extra_deps.lst
+```
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr          \
+            --sysconfdir=/etc      \
+            --disable-efiemu       \
+            --disable-werror
+```
+
+Compile.
+
+```shell
+make
+```
+
+The tests are not recommended, since they depend on unavailable packages.
+
+Install the package and move the bash completion support file to the recommended location.
+
+```shell
+make install
+mv -v /etc/bash_completion.d/grub /usr/share/bash-completion/completions
+```
+
+## Gzip
+
+- 0.3 SBU
+- 21 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+## IPRoute2
+
+- 0.1 SBU
+- 17 MB
+
+Remove the man page of a program that will not be installed.
+
+```shell
+sed -i /ARPD/d Makefile
+rm -fv man/man8/arpd.8
+```
+
+Compile and install.
+
+```shell
+make NETNS_RUN_DIR=/run/netns
+make SBINDIR=/usr/sbin install
+```
+
+If desired, install the docs.
+
+```shell
+install -vDm644 COPYING README* -t /usr/share/doc/iproute2-6.13.0
+```
+
+## Kbd
+
+- 0.1 SBU
+- 34 MB
+
+Patch it.
+
+```shell
+patch -Np1 -i ../kbd-2.7.1-backspace-1.patch
+```
+
+Remove a redundant program.
+
+```shell
+sed -i '/RESIZECONS_PROGS=/s/yes/no/' configure
+sed -i 's/resizecons.8 //' docs/man/man8/Makefile.in
+```
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr --disable-vlock
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+If desired, install the docs.
+
+```shell
+cp -R -v docs/doc -T /usr/share/doc/kbd-2.7.1
+```
+
+## Libpipeline
+
+- 0.1 SBU
+- 11 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+## Make
+
+- 0.7 SBU
+- 13 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr
+```
+
+Compile, test and install.
+
+```shell
+make
+chown -R tester .
+su tester -c "PATH=$PATH make check"
+make install
+```
+
+## Patch
+
+- 0.2 SBU
+- 12 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+## Tar
+
+- 0.6 SBU
+- 43 MB
+
+Prepare for compilation.
+
+```shell
+FORCE_UNSAFE_CONFIGURE=1  \
+./configure --prefix=/usr
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+make -C doc install-html docdir=/usr/share/doc/tar-1.35
+```
+
+## Texinfo
+
+- 0.3 SBU
+- 160 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+Optionally install the components belonging in a TeX installation.
+
+```shell
+make TEXMF=/usr/share/texmf install-tex
+```
+
+If for some reason the `/usr/share/info/dir` needs to be recreated, run this command.
+
+```shell
+pushd /usr/share/info
+  rm -v dir
+  for f in *
+    do install-info $f dir 2>/dev/null
+  done
+popd
+```
+
+## Vim
+
+- 3.4 SBU
+- 251 MB
+
+Change the default location of `vimrc` to `/etc`.
+
+```shell
+echo '#define SYS_VIMRC_FILE "/etc/vimrc"' >> src/feature.h
+```
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr
+```
+
+Compile.
+
+```shell
+make
+```
+
+Ensure that user tester can write to the source tree and exclude tests requiring curl or wget.
+
+```shell
+chown -R tester .
+sed '/test_plugin_glvs/d' -i src/testdir/Make_all.mak
+```
+
+Run the tests.
+
+```shell
+su tester -c "TERM=xterm-256color LANG=en_US.UTF-8 make -j1 test" \
+   &> vim-test.log
+```
+
+Check for the text "ALL DONE" in the log file.
+
+Install the package.
+
+```shell
+make install
+```
+
+Create a symlink from vi to vim.
+
+```shell
+ln -sv vim /usr/bin/vi
+for L in  /usr/share/man/{,*/}man1/vim.1; do
+    ln -sv vim.1 $(dirname $L)/vi.1
+done
+```
+
+Add a symlink for the docs for consistency.
+
+```shell
+ln -sv ../vim/vim91/doc /usr/share/doc/vim-9.1.1166
+```
+
+Create a default configuration.
+
+```shell
+cat > /etc/vimrc << "EOF"
+" Begin /etc/vimrc
+
+" Ensure defaults are set before customizing settings, not after
+source $VIMRUNTIME/defaults.vim
+let skip_defaults_vim=1
+
+set nocompatible
+set backspace=2
+set mouse=
+syntax on
+if (&term == "xterm") || (&term == "putty")
+  set background=dark
+endif
+
+" End /etc/vimrc
+EOF
+```
+
+## MarkupSafe
+
+- < 0.1 SBU
+- 500 KB
+
+Compile and install.
+
+```shell
+pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
+pip3 install --no-index --find-links dist Markupsafe
+```
+
+## Jinja2
+
+- < 0.1 SBU
+- 2.5 MB
+
+Compile and install.
+
+```shell
+pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
+pip3 install --no-index --find-links dist Jinja2
+```
+
+## Udev
+
+- 0.3 SBU
+- 161 MB
+
+**TODO**
