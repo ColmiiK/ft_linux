@@ -15,6 +15,14 @@ I've also had to adapt certain steps since I'm writing this guide with the purpo
 completing the `ft_linux` 42 project.
 Mainly, using a different kernel version (4.9) instead of the latest current one.
 
+**Very important notice**: Don't be like me and start to build the system following
+the latest guide, and then a quarter of the way through figure out that you need to
+use an older kernel, then try to fix it by just installing an older kernel and
+following the rest of the **new** guide, then have to patch multiple packages,
+downgrading some or modifying commands.
+What I'm trying to say is do your research and probably follow the latest version
+of the guide that uses a kernel version 4.x.
+
 ## How to build an LFS system
 
 The LFS will be built on an existing Linux distro, that could be Fedora, openSUSe or any
