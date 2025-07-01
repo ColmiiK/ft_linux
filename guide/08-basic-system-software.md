@@ -2530,4 +2530,387 @@ pip3 install --no-index --find-links dist Jinja2
 - 0.3 SBU
 - 161 MB
 
-**TODO**
+Udev is part of Systemd, extract it.
+
+Remove two unneeded groups from udev rules.
+
+```shell
+sed -e 's/GROUP="render"/GROUP="video"/' \
+    -e 's/GROUP="sgx", //'               \
+    -i rules.d/50-udev-default.rules.in
+```
+
+Remove one udev rule requiring a full systemd installation.
+
+```shell
+sed -i '/systemd-sysctl/s/^/#/' rules.d/99-systemd.rules.in
+```
+
+Adjust hardcoded paths to network config files.
+
+```shell
+sed -e '/NETWORK_DIRS/s/systemd/udev/' \
+    -i src/libsystemd/sd-network/network-util.h
+```
+
+Prepare for compilation.
+
+```shell
+mkdir -p build
+cd       build
+
+meson setup ..                  \
+      --prefix=/usr             \
+      --buildtype=release       \
+      -D mode=release           \
+      -D dev-kvm-mode=0660      \
+      -D link-udev-shared=false \
+      -D logind=false           \
+      -D vconsole=false
+```
+
+Get a list of udev helpers as environment variables.
+
+```shell
+export udev_helpers=$(grep "'name' :" ../src/udev/meson.build | \
+                      awk '{print $3}' | tr -d ",'" | grep -v 'udevadm')
+```
+
+Only build the components for udev.
+
+```shell
+ninja udevadm systemd-hwdb                                           \
+      $(ninja -n | grep -Eo '(src/(lib)?udev|rules.d|hwdb.d)/[^ ]*') \
+      $(realpath libudev.so --relative-to .)                         \
+      $udev_helpers
+```
+
+Install the package.
+
+```shell
+install -vm755 -d {/usr/lib,/etc}/udev/{hwdb.d,rules.d,network}
+install -vm755 -d /usr/{lib,share}/pkgconfig
+install -vm755 udevadm                             /usr/bin/
+install -vm755 systemd-hwdb                        /usr/bin/udev-hwdb
+ln      -svfn  ../bin/udevadm                      /usr/sbin/udevd
+cp      -av    libudev.so{,*[0-9]}                 /usr/lib/
+install -vm644 ../src/libudev/libudev.h            /usr/include/
+install -vm644 src/libudev/*.pc                    /usr/lib/pkgconfig/
+install -vm644 src/udev/*.pc                       /usr/share/pkgconfig/
+install -vm644 ../src/udev/udev.conf               /etc/udev/
+install -vm644 rules.d/* ../rules.d/README         /usr/lib/udev/rules.d/
+install -vm644 $(find ../rules.d/*.rules \
+                      -not -name '*power-switch*') /usr/lib/udev/rules.d/
+install -vm644 hwdb.d/*  ../hwdb.d/{*.hwdb,README} /usr/lib/udev/hwdb.d/
+install -vm755 $udev_helpers                       /usr/lib/udev
+install -vm644 ../network/99-default.link          /usr/lib/udev/network
+```
+
+Install some custom rules useful in an LFS.
+
+```shell
+tar -xvf ../../udev-lfs-20230818.tar.xz
+make -f udev-lfs-20230818/Makefile.lfs install
+```
+
+Install the man pages.
+
+```shell
+tar -xf ../../systemd-man-pages-257.3.tar.xz                            \
+    --no-same-owner --strip-components=1                              \
+    -C /usr/share/man --wildcards '*/udev*' '*/libudev*'              \
+                                  '*/systemd.link.5'                  \
+                                  '*/systemd-'{hwdb,udevd.service}.8
+
+sed 's|systemd/network|udev/network|'                                 \
+    /usr/share/man/man5/systemd.link.5                                \
+  > /usr/share/man/man5/udev.link.5
+
+sed 's/systemd\(\\\?-\)/udev\1/' /usr/share/man/man8/systemd-hwdb.8   \
+                               > /usr/share/man/man8/udev-hwdb.8
+
+sed 's|lib.*udevd|sbin/udevd|'                                        \
+    /usr/share/man/man8/systemd-udevd.service.8                       \
+  > /usr/share/man/man8/udevd.8
+
+rm /usr/share/man/man*/systemd*
+```
+
+And unset the udev_helpers variable.
+
+```shell
+unset udev_helpers
+```
+
+Create the initial configuration database.
+This command should be run each time the hardware information is updated.
+
+```shell
+udev-hwdb update
+```
+
+## Man-DB
+
+- 0.3 SBU
+- 44 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr                         \
+            --docdir=/usr/share/doc/man-db-2.13.0 \
+            --sysconfdir=/etc                     \
+            --disable-setuid                      \
+            --enable-cache-owner=bin              \
+            --with-browser=/usr/bin/lynx          \
+            --with-vgrind=/usr/bin/vgrind         \
+            --with-grap=/usr/bin/grap             \
+            --with-systemdtmpfilesdir=            \
+            --with-systemdsystemunitdir=
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+## Procps-ng
+
+- 0.1 SBU
+- 28 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr                           \
+            --docdir=/usr/share/doc/procps-ng-4.0.5 \
+            --disable-static                        \
+            --disable-kill                          \
+            --disable-pidwait                       \
+            --enable-watch8bit
+```
+
+**Important**: since our kernel is older than advised, we have to disable `pidwait`.
+
+Compile, test and install.
+
+```shell
+make
+chown -R tester .
+su tester -c "PATH=$PATH make check"
+make install
+```
+
+## Util-linux
+
+- 0.5 SBU
+- 316 MB
+
+Prepare for compilation.
+
+```shell
+./configure --bindir=/usr/bin     \
+            --libdir=/usr/lib     \
+            --sbindir=/usr/sbin   \
+            --disable-chfn-chsh   \
+            --disable-login       \
+            --disable-nologin     \
+            --disable-su          \
+            --disable-setpriv     \
+            --disable-runuser     \
+            --disable-pylibmount  \
+            --disable-liblastlog2 \
+            --disable-static      \
+            --without-python      \
+            --without-systemd     \
+            --without-systemdsystemunitdir        \
+            ADJTIME_PATH=/var/lib/hwclock/adjtime \
+            --docdir=/usr/share/doc/util-linux-2.33
+```
+
+Some idiot (me) decided to keep going after having to fix the kernel issue,
+so now we have to fix this package as well. Downloading and installing version 2.33 works,
+after slightly modifying the configuration command, of course.
+
+Compile.
+
+```shell
+make
+```
+
+Create a dummy `/etc/fstab` file for two tests and run them as non-root.
+
+```shell
+touch /etc/fstab
+chown -R tester .
+su tester -c "make -k check"
+```
+
+The hardlink tests may fail.
+Also, lsfd and utmp are known to fail in chroot.
+
+Install the package.
+
+```shell
+make install
+```
+
+## E2fsprogs
+
+- 2.4 SBU
+- 99 MB
+
+The E2fsprogs docs recommend a build directory.
+
+```shell
+mkdir -v build
+cd       build
+```
+
+Prepare for compilation.
+
+```shell
+../configure --prefix=/usr           \
+             --sysconfdir=/etc       \
+             --enable-elf-shlibs     \
+             --disable-libblkid      \
+             --disable-libuuid       \
+             --disable-uuidd         \
+             --disable-fsck
+```
+
+Compile, test and install.
+
+```shell
+make
+make check
+make install
+```
+
+The test named `m_assume_storage_prezeroed` is known to fail.
+
+Remove static libraries.
+
+```shell
+rm -fv /usr/lib/{libcom_err,libe2p,libext2fs,libss}.a
+```
+
+The package doesn't update the system-wide `dir` file. Unzip then update.
+
+```shell
+gunzip -v /usr/share/info/libext2fs.info.gz
+install-info --dir-file=/usr/share/info/dir /usr/share/info/libext2fs.info
+```
+
+If desired, install additional docs.
+
+```shell
+makeinfo -o      doc/com_err.info ../lib/et/com_err.texinfo
+install -v -m644 doc/com_err.info /usr/share/info
+install-info --dir-file=/usr/share/info/dir /usr/share/info/com_err.info
+```
+
+## Sysklogd
+
+- < 0.1 SBU
+- 4.1 MB
+
+Prepare for compilation.
+
+```shell
+./configure --prefix=/usr      \
+            --sysconfdir=/etc  \
+            --runstatedir=/run \
+            --without-logger   \
+            --disable-static   \
+            --docdir=/usr/share/doc/sysklogd-2.7.0
+```
+
+Compile and install.
+
+```shell
+make
+make install
+```
+
+Create a new `/etc/syslog.conf` file by running this command.
+
+```shell
+cat > /etc/syslog.conf << "EOF"
+# Begin /etc/syslog.conf
+
+auth,authpriv.* -/var/log/auth.log
+*.*;auth,authpriv.none -/var/log/sys.log
+daemon.* -/var/log/daemon.log
+kern.* -/var/log/kern.log
+mail.* -/var/log/mail.log
+user.* -/var/log/user.log
+*.emerg *
+
+# Do not open any internet ports.
+secure_mode 2
+
+# End /etc/syslog.conf
+EOF
+```
+
+## SysVinit
+
+- < 0.1 SBU
+- 2.9 MB
+
+Patch it.
+
+```shell
+patch -Np1 -i ../sysvinit-3.14-consolidated-1.patch
+```
+
+Compile and install.
+
+```shell
+make
+make install
+```
+
+## Debugging symbols
+
+Most programs and libraries are built with debugging symbols (-g).
+This enlarges the sizes between 50% and 80%, and since it's not usual that
+a user debugs their own system software, we can remove them and save space.
+Although, this is optional.
+
+As such, I've decided to skip it. The main reason being that since I've changed
+some of the packages, this could cause unexpected breakages and brick the system.
+Also, I'd like to debug the system if something goes wrong, since this is a
+development system that we'll use for the kfs projects.
+
+If you do not wish to skip it, you can follow the procedure in the [LFS](https://www.linuxfromscratch.org/lfs/view/stable/chapter08/stripping.html).
+
+## Cleaning up
+
+Let's clean up some files from tests.
+
+```shell
+rm -rf /tmp/{*,.*}
+```
+
+There are some unneeded `.la` files we can remove.
+
+```shell
+find /usr/lib /usr/libexec -name \*.la -delete
+```
+
+The compiler we built before is no longer needed.
+
+```shell
+find /usr -depth -name $(uname -m)-lfs-linux-gnu\* | xargs rm -rf
+```
+
+And finally, remove the `tester` user.
+
+```shell
+userdel -r tester
+```
