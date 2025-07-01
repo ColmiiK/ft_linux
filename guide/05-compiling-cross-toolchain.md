@@ -175,7 +175,7 @@ cp -rv dest/include $LFS/usr
 
 **Important**: Since we need to use a kernel version 4.x, the current, up-to-date, version of the LFS
 uses a kernel version 6.x, which has different steps. I took the step from the LFS 8.0 since that uses
-kernel version 4.9.9 and modified it accordingly.
+kernel version 4.19.325 (the latest 4.x kernel version) and modified it accordingly.
 
 ## Glibc
 
