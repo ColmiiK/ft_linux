@@ -1,0 +1,11 @@
+label: gpt
+label-id: 17A279A1-32F0-40BA-8AE4-076428F7B047
+device: /dev/sdb
+unit: sectors
+first-lba: 34
+last-lba: 62914526
+
+/dev/sdb1 : start=        2048, size=      204800, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, uuid=D8F7C26F-42BE-46BE-9AAE-F7F832F56108, name="Linux filesystem"
+/dev/sdb2 : start=      206848, size=        2048, type=21686148-6449-6E6F-744E-656564454649, uuid=D10ECC05-3A9C-429B-9E87-A4D6F9999896, name="BIOS boot partition"
+/dev/sdb3 : start=      208896, size=    16777216, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F, uuid=E6AA6C52-B641-4475-A060-26D3DE8345F1, name="Linux swap"
+/dev/sdb4 : start=    16986112, size=    45928415, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, uuid=64BB61E7-1968-4E52-AC29-AE12206D1782, name="Linux filesystem"
