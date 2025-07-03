@@ -2,8 +2,8 @@
 
 # Ensure user is root
 if ! whoami | grep -q "root"; then
-  echo "Please become root"
-  su
+  echo "ERROR: Please become root: 'su'"
+  exit 1
 fi
 
 # Create directory for tools

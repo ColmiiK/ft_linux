@@ -2,8 +2,8 @@
 
 # Ensure user is lfs
 if ! whoami | grep -q "lfs"; then
-  echo "Please become lfs"
-  su - lfs
+  echo "ERROR: Please become lfs: 'su - lfs'"
+  exit 1
 fi
 
 # Clean up environment

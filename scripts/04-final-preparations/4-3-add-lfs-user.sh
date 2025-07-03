@@ -2,8 +2,8 @@
 
 # Ensure user is root
 if ! whoami | grep -q "root"; then
-  echo "Please become root"
-  su
+  echo "ERROR: Please become root before continuing: 'su'"
+  exit 1
 fi
 
 # Create LFS group
@@ -22,4 +22,4 @@ chown -v lfs $LFS/tools
 chown -v lfs $LFS/sources
 
 # Log in in login shell as LFS
-su - lfs
+echo "Please log in as user lfs: 'su - lfs'"
