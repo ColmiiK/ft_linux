@@ -19,6 +19,10 @@ tarball="binutils-2.32"
 ########################
 cd $LFS/sources
 tar -xvf $tarball.tar.xz
+if [ ! -d $LFS/sources/$tarball ]; then
+  echo "ERROR: Unable to extract tarball named $tarball, check the file extensions"
+  exit 1
+fi
 cd $tarball
 
 ########################
