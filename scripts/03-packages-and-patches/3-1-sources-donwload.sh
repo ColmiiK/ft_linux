@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Ensure user is root
+if ! whoami | grep -q "root"; then
+  echo "Please become root"
+  su
+fi
+
 # Create sources directory
 mkdir -v $LFS/sources
 
