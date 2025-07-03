@@ -11,7 +11,9 @@ if ! echo $LFS | grep -q "/mnt/lfs"; then
   exit 1
 fi
 
-# Variables
+################
+# Tarball name #
+################
 tarball="binutils-2.32"
 
 ########################
