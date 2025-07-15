@@ -11,7 +11,7 @@ fi
 ################
 # Tarball name #
 ################
-tarball='xml::parser-2.44'
+tarball='XML-Parser-2.44'
 
 ########################
 # Generic build steps  #
