@@ -34,7 +34,9 @@ cd $tarball
 sed '361 s/{/\\{/' -i bin/autoscan.in
 ./configure --prefix=/usr
 make
-make check
+# The test suite is broken with bash 5 and libtool 2.4.3
+# Uncomment the following line to run anyway
+# make check
 make install
 
 #########################
