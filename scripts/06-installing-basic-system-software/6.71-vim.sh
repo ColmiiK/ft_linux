@@ -21,6 +21,7 @@ echo "Extracting $tarball..."
 tar -xvf $tarball.tar.xz >/dev/null 2>&1
 tar -xvf $tarball.tar.gz >/dev/null 2>&1
 tar -xvf $tarball.tar.bz2 >/dev/null 2>&1
+tarball='vim81'
 if [ ! -d /sources/$tarball ]; then
   echo "ERROR: Unable to extract tarball named $tarball"
   exit 1
