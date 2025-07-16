@@ -5,11 +5,14 @@
 me=$(basename $0)
 
 for script in *; do
-  if [ $script == $me ]; then
-    continue
-  fi
-  echo "Executing script $script..."
-  bash $script
+  step=${script::4}
+  case "$step" in
+  "5.00" | "6.35" | "5.36") ;;
+  *)
+    echo "Executing $script..."
+    # bash $script
+    ;;
+  esac
 done
 
 echo "All done!"
