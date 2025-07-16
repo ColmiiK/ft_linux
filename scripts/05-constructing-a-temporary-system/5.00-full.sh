@@ -7,7 +7,7 @@ me=$(basename $0)
 for script in *; do
   step=${script::4}
   case "$step" in
-  "5.00" | "6.35" | "5.36") ;;
+  "5.00" | "5.35" | "5.36") ;;
   *)
     echo "Executing $script..."
     # bash $script
