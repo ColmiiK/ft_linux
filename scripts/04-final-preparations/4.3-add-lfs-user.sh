@@ -7,13 +7,13 @@ if ! whoami | grep -q "root"; then
 fi
 
 # Create LFS group
-groupadd lfs
+sudo groupadd lfs
 
 # Add LFS user
-useradd -s /bin/bash -g lfs -m -k /dev/null lfs
+sudo useradd -s /bin/bash -g lfs -m -k /dev/null lfs
 
 # Set password for LFS user
-passwd lfs
+(echo "1234" echo"1234") | passwd lfs
 
 # Give ownership of tools to LFS
 chown -v lfs $LFS/tools
