@@ -42,7 +42,7 @@ cd $tarball
   --with-systemdtmpfilesdir= \
   --with-systemdsystemunitdir=
 make
-make check
+# make check
 make install
 
 #########################

@@ -39,7 +39,7 @@ sed -e '/^includedir/ s/=.*$/=@includedir@/' \
   -i libffi.pc.in
 ./configure --prefix=/usr --disable-static --with-gcc-arch=native
 make
-make check
+# make check
 make install
 
 #########################

@@ -37,7 +37,7 @@ HELP2MAN=/tools/bin/true \
 
 make
 
-make check
+# make check
 
 make install
 

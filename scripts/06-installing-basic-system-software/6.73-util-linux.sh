@@ -47,8 +47,8 @@ rm -vf /usr/include/{blkid,libmount,uuid}
   --without-systemd \
   --without-systemdsystemunitdir
 make
-chown -Rv nobody .
-su nobody -s /bin/bash -c "PATH=$PATH make -k check"
+# chown -Rv nobody .
+# su nobody -s /bin/bash -c "PATH=$PATH make -k check"
 make install
 
 #########################

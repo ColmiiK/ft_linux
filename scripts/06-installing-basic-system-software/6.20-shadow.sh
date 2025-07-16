@@ -50,7 +50,7 @@ mv -v /usr/bin/passwd /bin
 pwconv
 grpconv
 
-passwd root
+(echo "12345"; echo "12345") | passwd root
 
 #########################
 # Generic cleanup steps #

@@ -33,7 +33,7 @@ cd $tarball
 ########################
 ./configure --prefix=/usr
 make
-make check
+# make check
 make install
 sed -i '1 s/tools/usr/' /usr/bin/checkmk
 

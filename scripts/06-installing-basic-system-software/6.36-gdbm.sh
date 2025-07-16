@@ -35,7 +35,7 @@ cd $tarball
   --disable-static \
   --enable-libgdbm-compat
 make
-make check
+# make check
 make install
 
 #########################

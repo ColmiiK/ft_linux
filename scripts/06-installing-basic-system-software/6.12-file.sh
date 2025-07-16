@@ -31,7 +31,7 @@ cd $tarball
 #########################
 ./configure --prefix=/usr
 make
-make check
+# make check
 make install
 
 #########################

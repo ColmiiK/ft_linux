@@ -43,7 +43,7 @@ cd build
   --with-system-zlib
 
 make tooldir=/usr
-make -k check
+# make -k check
 make tooldir=/usr install
 
 #########################

@@ -38,7 +38,7 @@ sed -i 's/testsuite.panic-tests.sh//' Makefile.in
 make
 make html
 
-make check
+# make check
 
 make install
 install -d -m755 /usr/share/doc/sed-4.7

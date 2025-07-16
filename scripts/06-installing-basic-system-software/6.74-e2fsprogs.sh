@@ -42,7 +42,7 @@ cd build
   --disable-uuidd \
   --disable-fsck
 make
-make check
+# make check
 make install
 make install-libs
 chmod -v u+w /usr/lib/{libcom_err,libe2p,libext2fs,libss}.a

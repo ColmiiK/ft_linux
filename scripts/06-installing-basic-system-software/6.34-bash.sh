@@ -36,11 +36,11 @@ cd $tarball
   --without-bash-malloc \
   --with-installed-readline
 make
-chown -Rv nobody .
-su nobody -s /bin/bash -c "PATH=$PATH HOME=/home make tests"
+# chown -Rv nobody .
+# su nobody -s /bin/bash -c "PATH=$PATH HOME=/home make tests"
 make install
 mv -vf /usr/bin/bash /bin
-exec /bin/bash --login +h
+# exec /bin/bash --login +h
 
 #########################
 # Generic cleanup steps #

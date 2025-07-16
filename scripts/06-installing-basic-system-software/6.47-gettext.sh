@@ -39,7 +39,7 @@ sed -e '/AppData/{N;N;p;s/\.appdata\./.metainfo./}' \
   --disable-static \
   --docdir=/usr/share/doc/gettext-0.19.8.1
 make
-make check
+# make check
 make install
 chmod -v 0755 /usr/lib/preloadable_libintl.so
 

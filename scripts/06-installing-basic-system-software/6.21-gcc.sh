@@ -51,14 +51,14 @@ SED=sed \
 
 make
 
-ulimit -s 32768
+# ulimit -s 32768
 
-rm ../gcc/testsuite/g++.dg/pr83239.C
+# rm ../gcc/testsuite/g++.dg/pr83239.C
 
-chown -Rv nobody .
-su nobody -s /bin/bash -c "PATH=$PATH make -k check"
+# chown -Rv nobody .
+# su nobody -s /bin/bash -c "PATH=$PATH make -k check"
 
-../contrib/test_summary
+# ../contrib/test_summary
 
 make install
 

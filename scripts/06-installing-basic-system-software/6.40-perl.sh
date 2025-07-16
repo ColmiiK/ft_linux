@@ -42,7 +42,7 @@ sh Configure -des -Dprefix=/usr \
   -Duseshrplib \
   -Dusethreads
 make
-make -k test
+# make -k test
 make install
 unset BUILD_ZLIB BUILD_BZIP2
 

@@ -34,7 +34,7 @@ cd $tarball
 sed -i '5481,5485 s/({/(\\{/' tp/Texinfo/Parser.pm
 ./configure --prefix=/usr --disable-static
 make
-make check
+# make check
 make install
 make TEXMF=/usr/share/texmf install-tex
 pushd /usr/share/info

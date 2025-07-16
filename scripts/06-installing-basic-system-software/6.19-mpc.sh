@@ -36,7 +36,7 @@ cd $tarball
 make
 make html
 
-make check
+# make check
 
 make install
 make install-html

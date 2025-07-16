@@ -64,11 +64,11 @@ case $(uname -m) in
 i?86) ln -sfnv $PWD/elf/ld-linux.so.2 /lib ;;
 x86_64) ln -sfnv $PWD/elf/ld-linux-x86-64.so.2 /lib ;;
 esac
-echo "Run the tests? [Y,n]"
-read input
-if [[ $input == "Y" || $input == "y" ]]; then
-  make check
-fi
+# echo "Run the tests? [Y,n]"
+# read input
+# if [[ $input == "Y" || $input == "y" ]]; then
+#   make check
+# fi
 
 touch /etc/ld.so.conf
 

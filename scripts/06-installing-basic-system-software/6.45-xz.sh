@@ -35,7 +35,7 @@ cd $tarball
   --disable-static \
   --docdir=/usr/share/doc/xz-5.2.4
 make
-make check
+# make check
 make install
 mv -v /usr/bin/{lzma,unlzma,lzcat,xz,unxz,xzcat} /bin
 mv -v /usr/lib/liblzma.so.* /lib

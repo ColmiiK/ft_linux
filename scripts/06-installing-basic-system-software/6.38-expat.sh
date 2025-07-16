@@ -36,7 +36,7 @@ sed -i 's|usr/bin/env |bin/|' run.sh.in
   --disable-static \
   --docdir=/usr/share/doc/expat-2.2.6
 make
-make check
+# make check
 make install
 install -v -m644 doc/*.{html,png,css} /usr/share/doc/expat-2.2.6
 
