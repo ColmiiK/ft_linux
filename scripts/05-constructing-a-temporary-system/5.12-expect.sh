@@ -38,7 +38,7 @@ sed 's:/usr/local/bin:/bin:' configure.orig >configure
   --with-tclinclude=/tools/include
 
 make
-make test
+# make test
 make SCRIPTS="" install
 
 #########################

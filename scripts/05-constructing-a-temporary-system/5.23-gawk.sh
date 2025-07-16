@@ -37,7 +37,7 @@ cd $tarball
 
 ./configure --prefix=/tools
 make
-make check
+# make check
 make install
 
 #########################

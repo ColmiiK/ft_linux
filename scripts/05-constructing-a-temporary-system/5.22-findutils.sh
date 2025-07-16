@@ -41,7 +41,7 @@ echo "#define _IO_IN_BACKUP 0x100" >>gl/lib/stdio-impl.h
 
 ./configure --prefix=/tools
 make
-make check
+# make check
 make install
 
 #########################

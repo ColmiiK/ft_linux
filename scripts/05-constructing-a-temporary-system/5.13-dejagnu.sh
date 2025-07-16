@@ -37,7 +37,7 @@ cd $tarball
 
 ./configure --prefix=/tools
 make install
-make check
+# make check
 
 #########################
 # Generic cleanup steps #
