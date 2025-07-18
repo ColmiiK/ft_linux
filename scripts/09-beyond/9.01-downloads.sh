@@ -13,7 +13,8 @@ if [ ! -f $LFS/sources/wget-1.20.1.tar.gz ]; then
 fi
 
 if [ ! -f $LFS/sources/make-ca-1.2.tar.xz ]; then
-  wget https://github.com/djlucas/make-ca/releases/download/v1.2/make-ca-1.2.tar.xz --directory-prefix=$LFS/sources
+  wget https://github.com/djlucas/make-ca/archive/refs/tags/v1.2.tar.gz --directory-prefix=$LFS/sources
+  mv $LFS/sources/v1.2.tar.gz $LFS/sources/make-ca-1.2.tar.gz
 fi
 
 if [ ! -f $LFS/sources/p11-kit-0.23.15.tar.gz ]; then
