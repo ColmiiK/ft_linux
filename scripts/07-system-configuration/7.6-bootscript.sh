@@ -51,7 +51,7 @@ cat >/etc/sysconfig/console <<"EOF"
 # Begin /etc/sysconfig/console
 
 KEYMAP="es"
-FONT="lat9u-14 -m 8859-2"
+FONT="lat9u-16 -m 8859-2"
 UNICODE="1"
 LOGLEVEL="7"
 

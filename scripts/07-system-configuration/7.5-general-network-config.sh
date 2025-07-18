@@ -11,6 +11,9 @@ echo "IFACE should equal the interface name"
 echo "IP should be a valid address"
 echo "GATEWAY should be the gateway address"
 echo "BROADCAST should equal brd"
+
+ip -o -f inet addr show | awk '$2 == "wlp58s0" { printf "INAME=%s \nIP=%s \nBROADCAST=%s\n", $2, $4, $6 }'
+
 cat >/etc/sysconfig/ifconfig.eth0 <<"EOF"
 ONBOOT=yes
 IFACE=eth0
@@ -33,7 +36,7 @@ nameserver 1.1.1.1
 EOF
 
 echo "Creating hostname config..."
-echo "lfs" >/etc/hostname
+echo "<student-login>" >/etc/hostname
 
 echo "Creating hosts config..."
 

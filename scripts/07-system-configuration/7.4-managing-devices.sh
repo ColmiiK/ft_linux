@@ -6,8 +6,7 @@ if [ "$(stat -c %d:%i /)" == "$(stat -c %d:%i /proc/1/root/.)" ]; then
   exit 1
 fi
 
-echo "Take the interface name, inet and brd from this output"
-ip addr show
+ip -o -f inet addr show | awk '$2 == "wlp58s0" { printf "INAME=%s \nIP=%s \nBROADCAST=%s\n", $2, $4, $6 }'
 
 bash /lib/udev/init-net-rules.sh
 
