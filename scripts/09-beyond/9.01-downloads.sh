@@ -12,7 +12,7 @@ if [ ! -f $LFS/sources/wget-1.20.1.tar.gz ]; then
   wget https://ftp.gnu.org/gnu/wget/wget-1.20.1.tar.gz --directory-prefix=$LFS/sources
 fi
 
-if [ ! -f $LFS/sources/make-ca-1.2.tar.xz ]; then
+if [ ! -f $LFS/sources/make-ca-1.2.tar.gz ]; then
   wget https://github.com/djlucas/make-ca/archive/refs/tags/v1.2.tar.gz --directory-prefix=$LFS/sources
   mv $LFS/sources/v1.2.tar.gz $LFS/sources/make-ca-1.2.tar.gz
 fi
