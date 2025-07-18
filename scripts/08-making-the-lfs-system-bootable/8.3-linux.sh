@@ -74,5 +74,5 @@ echo "RUN
 #########################
 echo "Clean up process:
 cd /sources
-rm -rf $tarball
+mv $tarball /usr/src/kernel-4.20.12
 "
