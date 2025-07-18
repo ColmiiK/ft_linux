@@ -38,6 +38,9 @@ Device Drivers  --->
 
 Kernel hacking  --->
        Choose kernel unwinder (Frame pointer unwinder)  ---> [CONFIG_UNWINDER_FRAME_POINTER]
+General setup  --->
+       Local version - append to kernel release (Add your student login)
+
 "
 echo "RUN
   make menuconfig"
